@@ -157,6 +157,14 @@ class VendAPI
         $result = $this->getProducts(array('id' => $id));
         return is_array($result) && isset($result[0]) ? $result[0] : new VendProduct(null, $this);
     }
+
+
+    public function getProductBySku($sku)
+    {
+        $result = $this->getProducts(array('sku' => $sku));
+        return is_array($result) && isset($result[0]) ? $result[0] : new VendProduct(null, $this);
+    }
+
     /**
      * Get a single customer by id
      *
@@ -253,7 +261,7 @@ class VendAPI
             throw new Exception("Error: Unexpected result for request");
         }
         $sales = array();
-        foreach ($result->register_sales as $s) {
+        foreach ($result->registers as $s) {
             $sales[] = new VendSale($s, $this);
         }
 
@@ -289,7 +297,7 @@ class VendAPI
      */
     public function saveSale($sale)
     {
-        $result = $this->_request('/api/register_sales', $sale->toArray());
+        $result = $this->_request('/api/register_sales', $sale);
 
         return new VendSale($result->register_sale, $this);
     }
@@ -304,6 +312,7 @@ class VendAPI
      */
     private function _request($path, $data = null, $depage = null)
     {
+        
         $depage = $depage === null ? $this->automatic_depage : $depage;
         if ($data !== null) {
             // setup for a post
@@ -313,11 +322,6 @@ class VendAPI
         } else {
             // reset to a get
             $rawresult = $this->requestr->get($path);
-        }
-
-        $result = json_decode($rawresult);
-        if ($result === null) {
-            throw new Exception("Error: Recieved null result from API");
         }
 
         // Check for 400+ error:
@@ -362,6 +366,10 @@ class VendAPI
         if ($this->debug) {
             $this->last_result_raw = $rawresult;
             $this->last_result = $result;
+        }
+        $result = json_decode($rawresult);
+        if ($result === null) {
+            throw new Exception("Error: Recieved null result from API");
         }
 
         return $result;
