@@ -32,6 +32,8 @@ class VendAPI
 
     private $requestr;
 
+    private $lastPages;
+
     private $debug = false;
     /**
      * Request all pages of the results, looping through returning as a single result set
@@ -77,6 +79,11 @@ class VendAPI
     public function __destruct()
     {
 
+    }
+
+    public Function getPages()
+    {
+        return $this->lastPages;
     }
 
     public function getCustomers($options = array())
@@ -217,6 +224,7 @@ class VendAPI
             throw new Exception("Error: Unexpected result for request");
         }
         $products = array();
+        $this->lastPages = $result->pagination;      
         foreach ($result->products as $product) {
             $products[] = new VendProduct($product, $this);
         }
